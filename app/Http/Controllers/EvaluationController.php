@@ -34,10 +34,16 @@ public function store(Request $request)
                 throw new \Exception("Duplicate PO number detected: {$evalData['po_no']}.");
             }
 
+            // Handle the custom 'date_evaluation' provided by the user
+            $dateEvaluation = $evalData['date_evaluation']; // this is the custom date
+
+            // Convert it to Asia/Manila timezone if it's not already in that timezone
+            $dateEvaluation = Carbon::parse($dateEvaluation)->timezone('Asia/Manila');
+
             $evaluation = Evaluation::create([
                 'supplier_name'   => $evalData['supplier_name'],
                 'po_no'           => $evalData['po_no'],
-                'date_evaluation' => now()->timezone('Asia/Manila'), // set PH timezone
+                'date_evaluation' => $dateEvaluation, // Store the custom date
                 'covered_period'  => $evalData['covered_period'],
                 'office_name'     => $evalData['office_name'],
             ]);
@@ -47,7 +53,7 @@ public function store(Request $request)
                     throw new \Exception("Rating for criteria ID {$criteriaData['criteria_id']} is required.");
                 }
 
-                // Validate criteria ID exists
+                // Validate criteria ID exists in the evaluation_criteria table
                 if (!EvaluationCriteria::where('id', $criteriaData['criteria_id'])->exists()) {
                     throw new \Exception("Invalid criteria ID {$criteriaData['criteria_id']} provided.");
                 }
