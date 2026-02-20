@@ -270,7 +270,8 @@
 
 
 
- <div class="overflow-x-auto">
+
+<div class="overflow-x-auto">
   <table class="w-full border-collapse table-auto" id="evaluationTable">
     <thead class="bg-gray-50">
       <tr>
@@ -294,6 +295,16 @@
       <!-- Rows will be dynamically inserted here -->
     </tbody>
   </table>
+</div>
+
+<!-- Pagination Controls -->
+<div class="flex justify-between py-4" id="paginationControls">
+  <!-- Pagination controls go here -->
+</div>
+
+<!-- Pagination Info -->
+<div id="paginationInfo" class="text-sm text-gray-500">
+  Showing 1 to 10 of X results
 </div>
 
 <style>
@@ -333,18 +344,18 @@ document.addEventListener('DOMContentLoaded', async () => {
   const viewevaluationModal = document.getElementById('viewevaluationModal');
   const closeViewBtn = document.getElementById('closeviewModal');
   const cancelBtn = document.getElementById('cancelBtn');
-  const calculateBtn = document.getElementById('calculateEvaluationsBtn'); // NEW button reference
+  const calculateBtn = document.getElementById('calculateEvaluationsBtn');
 
   let evaluations = [];
   let filteredData = [];
 
   /* ========================= PAGINATION VARIABLES ========================= */
-    const entriesSelect = document.getElementById('entriesPerPage');
-    const paginationControls = document.getElementById('paginationControls');
-    const paginationInfo = document.getElementById('paginationInfo');
+  const entriesSelect = document.getElementById('entriesPerPage');
+  const paginationControls = document.getElementById('paginationControls');
+  const paginationInfo = document.getElementById('paginationInfo');
 
-    let currentPage = 1;
-    let entriesPerPage = parseInt(entriesSelect.value);
+  let currentPage = 1;
+  let entriesPerPage = entriesSelect ? parseInt(entriesSelect.value) : 10;
 
   /* ========================= LOADING MODAL ========================= */
   let loadingModal = document.getElementById('loadingModal');
@@ -457,94 +468,100 @@ document.addEventListener('DOMContentLoaded', async () => {
     } finally { hideModalLoading(); }
   }
 
+
   /* ========================= RENDER TABLE WITH CHECKBOX ========================= */
-  function renderTable(data) {
-    tbody.innerHTML = '';
-    if (data.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="10" class="px-6 py-4 text-center text-gray-500">No evaluations found.</td></tr>`;
-      return;
+function renderTable(data) {
+  tbody.innerHTML = '';
+
+  // Check if data is an array
+  if (!Array.isArray(data)) {
+    console.error('Data is not an array:', data);
+    tbody.innerHTML = `<tr><td colspan="10" class="px-6 py-4 text-center text-red-500">Unexpected data format.</td></tr>`;
+    return;
+  }
+
+  if (data.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="10" class="px-6 py-4 text-center text-gray-500">No evaluations found.</td></tr>`;
+    return;
+  }
+
+  data.forEach((eval, index) => {
+    const hasHeadApproval = eval.digital_approvals?.some(a => a.role === 'Head');
+    const status = !hasHeadApproval ? "HEAD REVIEW" : eval.eval_score >= 60 ? "Approved" : "Fail!";
+
+    // Check if the evaluation score is below 60 to apply the red color
+    const evalScoreClass = eval.eval_score < 60 ? 'text-red-600 border-2 border-red-600' : 'text-green-600 border-2 border-green-600';
+
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td class="px-6 py-4 text-sm text-gray-500">
+        <input type="checkbox" class="row-checkbox" data-id="${eval.id}">
+      </td>
+      <td class="px-6 py-4 text-sm text-gray-500">${index + 1}</td>
+      <td class="px-6 py-4 text-sm font-medium text-gray-900">${eval.supplier_name}</td>
+      <td class="px-6 py-4 text-sm text-gray-500">${eval.po_no}</td>
+      <td class="px-6 py-4 text-sm text-gray-500">${eval.date_evaluation}</td>
+      <td class="px-6 py-4 text-sm text-gray-500">${eval.evaluator}</td>
+      <td class="px-6 py-4 text-sm text-gray-500">${eval.department}</td>
+      <td class="px-6 py-4 text-sm ${evalScoreClass}"><strong>${eval.eval_score}%</strong></td>
+      <td class="px-6 py-4">
+        <span class="px-2 py-1 text-xs font-semibold rounded-full
+                      ${status === 'Approved' ? 'bg-green-100 text-green-800' :
+            status === 'Fail!' ? 'bg-red-100 text-red-800' :
+            'bg-yellow-100 text-yellow-800'}">
+          ${status}
+        </span>
+      </td>
+      <td class="px-6 py-4 text-right relative">
+        <div class="inline-block text-left relative">
+          <!-- Dropdown Button -->
+          <button onclick="toggleDropdown(this)"
+                  class="bg-gradient-to-r from-blue-600 to-blue-400 text-white border-b border-gray-200
+                         hover:bg-gradient-to-r hover:from-blue-500 hover:to-blue-300
+                         focus:outline-none px-4 py-2 rounded-md text-sm transition-all duration-200 ease-in-out">
+            Actions
+          </button>
+          <!-- Dropdown Menu -->
+          <div class="dropdown-menu hidden absolute right-0 mt-2 w-40 bg-blue-50 border border-blue-200 rounded-lg shadow-lg z-50">
+            <button
+              class="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-blue-100 viewEvaluationBtn"
+              data-id="${eval.id}">
+              <i class="ri-eye-line mr-2"></i> View
+            </button>
+            <button
+              class="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-blue-100 updateEvaluationBtn"
+              data-id="${eval.id}">
+              <i class="ri-edit-line mr-2"></i> Update
+            </button>
+            <a href="/evaluation/download/${eval.id}"
+               target="_blank"
+               class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-blue-100">
+              <i class="ri-file-download-line mr-2"></i> Download
+            </a>
+          </div>
+        </div>
+      </td>
+    `;
+    tbody.appendChild(row);
+  });
+
+  // Checkbox functionality & calculate button logic
+  const rowCheckboxes = tbody.querySelectorAll('.row-checkbox');
+  rowCheckboxes.forEach(cb => cb.addEventListener('change', () => {
+    const selectedCount = tbody.querySelectorAll('.row-checkbox:checked').length;
+
+    // Show the button only when 2 or more checkboxes are selected
+    if (selectedCount >= 2) {
+      calculateBtn.classList.remove('hidden');
+      calculateBtn.textContent = `Calculate Evaluations (${selectedCount})`;
+    } else {
+      calculateBtn.classList.add('hidden');
     }
+  }));
 
-    data.forEach((eval, index) => {
-      const hasHeadApproval = eval.digital_approvals?.some(a => a.role === 'Head');
-      const status = !hasHeadApproval ? "HEAD REVIEW" : eval.eval_score >= 60 ? "Approved" : "Fail!";
-
-        // Check if the evaluation score is below 60 to apply the red color
-     const evalScoreClass = eval.eval_score < 60 ? 'text-red-600 border-2 border-red-600' : 'text-green-600 border-2 border-green-600';
-
-      const row = document.createElement('tr');
-      row.innerHTML = `
-        <td class="px-6 py-4 text-sm text-gray-500">
-          <input type="checkbox" class="row-checkbox" data-id="${eval.id}">
-        </td>
-        <td class="px-6 py-4 text-sm text-gray-500">${index + 1}</td>
-        <td class="px-6 py-4 text-sm font-medium text-gray-900">${eval.supplier_name}</td>
-        <td class="px-6 py-4 text-sm text-gray-500">${eval.po_no}</td>
-        <td class="px-6 py-4 text-sm text-gray-500">${eval.date_evaluation}</td>
-        <td class="px-6 py-4 text-sm text-gray-500">${eval.evaluator}</td>
-        <td class="px-6 py-4 text-sm text-gray-500">${eval.department}</td>
-        <td class="px-6 py-4 text-sm ${evalScoreClass}"><strong>${eval.eval_score}%</strong></td>
-        <td class="px-6 py-4">
-          <span class="px-2 py-1 text-xs font-semibold rounded-full
-            ${status === 'Approved' ? 'bg-green-100 text-green-800' :
-              status === 'Fail!' ? 'bg-red-100 text-red-800' :
-              'bg-yellow-100 text-yellow-800'}">
-            ${status}
-          </span>
-        </td>
-<td class="px-6 py-4 text-right relative">
-  <div class="inline-block text-left relative">
-
-    <!-- Dropdown Button -->
-    <button onclick="toggleDropdown(this)"
-            class="text-gray-600 hover:text-gray-900 focus:outline-none">
-      <i class="ri-more-2-fill text-xl"></i>
-    </button>
-
-    <!-- Dropdown Menu -->
-    <div class="dropdown-menu hidden absolute right-0 mt-2 w-40 bg-blue-50 border border-blue-200 rounded-lg shadow-lg z-50">
-
-      <button
-        class="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-blue-100 viewEvaluationBtn"
-        data-id="${eval.id}">
-        <i class="ri-eye-line mr-2"></i> View
-      </button>
-      <button
-        class="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-blue-100 updateEvaluationBtn"
-        data-id="${eval.id}">
-        <i class="ri-edit-line mr-2"></i> Update
-      </button>
-
-      <a href="/evaluation/download/${eval.id}"
-         target="_blank"
-         class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-blue-100">
-        <i class="ri-file-download-line mr-2"></i> Download
-      </a>
-
-    </div>
-  </div>
-</td>
-
-      `;
-      tbody.appendChild(row);
-    });
-
-    // Checkbox functionality & calculate button logic
-    const rowCheckboxes = tbody.querySelectorAll('.row-checkbox');
-    rowCheckboxes.forEach(cb => cb.addEventListener('change', () => {
-      const selectedCount = tbody.querySelectorAll('.row-checkbox:checked').length;
-
-      // Show the button only when 2 or more checkboxes are selected
-      if (selectedCount >= 2) {
-        calculateBtn.classList.remove('hidden');
-        calculateBtn.textContent = `Calculate Evaluations (${selectedCount})`;
-      } else {
-        calculateBtn.classList.add('hidden');
-      }
-    }));
-
-    // Handle Select All checkbox
-    const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+  // Handle Select All checkbox
+  const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+  if (selectAllCheckbox) {
     selectAllCheckbox.addEventListener('change', () => {
       const isChecked = selectAllCheckbox.checked;
       rowCheckboxes.forEach(cb => cb.checked = isChecked);
@@ -558,243 +575,267 @@ document.addEventListener('DOMContentLoaded', async () => {
         calculateBtn.classList.add('hidden');
       }
     });
-
-    // Attach view events
-    document.querySelectorAll('.viewEvaluationBtn').forEach(btn => {
-      btn.addEventListener('click', () => loadEvaluation(btn.dataset.id));
-    });
   }
 
+  // Attach view events
+  document.querySelectorAll('.viewEvaluationBtn').forEach(btn => {
+    btn.addEventListener('click', () => loadEvaluation(btn.dataset.id));
+  });
+}
+
   /* ========================= FETCH DATA ========================= */
-  showLoading();
-  try {
-    const response = await fetch('/evaluation/list');
-    if (!response.ok) throw new Error('Failed to fetch evaluations');
-    evaluations = await response.json();
-    renderTable(evaluations);
-  } catch (err) {
-    console.error(err);
-    tbody.innerHTML = `<tr><td colspan="10" class="px-6 py-4 text-center text-red-500">${err.message}</td></tr>`;
-  } finally { hideLoading(); }
+showLoading();
+try {
+  const response = await fetch('/evaluation/list');
+  if (!response.ok) throw new Error('Failed to fetch evaluations');
+  const data = await response.json();
+
+  // Pass the evaluations array, not the whole object
+  evaluations = data.evaluations || [];
+
+  // Sort by date descending (latest first)
+  evaluations.sort((a, b) => new Date(b.date_evaluation) - new Date(a.date_evaluation));
+
+  renderTable(evaluations);
+
+} catch (err) {
+  console.error(err);
+  tbody.innerHTML = `<tr><td colspan="10" class="px-6 py-4 text-center text-red-500">${err.message}</td></tr>`;
+} finally {
+  hideLoading();
+}
 
   /* ========================= CALCULATE BUTTON ACTION ========================= */
-calculateBtn?.addEventListener('click', () => {
+  calculateBtn?.addEventListener('click', () => {
 
-  const selectedCheckboxes = Array.from(
-    tbody.querySelectorAll('.row-checkbox:checked')
-  );
+    const selectedCheckboxes = Array.from(
+      tbody.querySelectorAll('.row-checkbox:checked')
+    );
 
-  if (selectedCheckboxes.length < 2) return;
+    if (selectedCheckboxes.length < 2) return;
 
-  let totalScore = 0;
-  let supplierSet = new Set();
-  let poList = [];
-  let deptSet = new Set();
-  let evaluationCards = '';
+    let totalScore = 0;
+    let supplierSet = new Set();
+    let poList = [];
+    let deptSet = new Set();
+    let evaluationCards = '';
 
-  selectedCheckboxes.forEach(cb => {
-    const id = cb.dataset.id;
-    const evaluation = evaluations.find(e => e.id == id);
-    if (!evaluation) return;
+    selectedCheckboxes.forEach(cb => {
+      const id = cb.dataset.id;
+      const evaluation = evaluations.find(e => e.id == id);
+      if (!evaluation) return;
 
-    const score = parseFloat(evaluation.eval_score);
+      const score = parseFloat(evaluation.eval_score);
 
-    totalScore += score;
-    supplierSet.add(evaluation.supplier_name);
-    poList.push(evaluation.po_no);
-    deptSet.add(evaluation.department);
+      totalScore += score;
+      supplierSet.add(evaluation.supplier_name);
+      poList.push(evaluation.po_no);
+      deptSet.add(evaluation.department);
 
-    evaluationCards += `
-      <div style="
-        display:flex;
-        justify-content:space-between;
-        align-items:center;
-        padding:10px 14px;
-        border-radius:10px;
-        background:#f8fafc;
-        margin-bottom:8px;
-        border:1px solid #e5e7eb;
-      ">
-        <div>
-          <div style="font-weight:600;color:#1f2937">
-            ${evaluation.supplier_name}
-          </div>
-          <div style="font-size:13px;color:#6b7280">
-            PO: ${evaluation.po_no}
-          </div>
-        </div>
+      evaluationCards += `
         <div style="
-          font-weight:bold;
-          font-size:16px;
-          color:#2563eb;
+          display:flex;
+          justify-content:space-between;
+          align-items:center;
+          padding:10px 14px;
+          border-radius:10px;
+          background:#f8fafc;
+          margin-bottom:8px;
+          border:1px solid #e5e7eb;
         ">
-          ${score.toFixed(2)}%
-        </div>
-      </div>
-    `;
-  });
-
-  const overallScore = totalScore / selectedCheckboxes.length;
-
-  const isPassed = overallScore >= 60;
-  const badgeColor = isPassed ? '#16a34a' : '#dc2626';
-  const badgeText = isPassed ? 'PASSED' : 'FAILED';
-
-  Swal.fire({
-    width: 800,
-    background: '#ffffff',
-    confirmButtonColor: '#2563eb',
-    html: `
-      <div style="text-align:left">
-
-        <!-- HEADER -->
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
           <div>
-            <h2 style="margin:0;font-size:22px;font-weight:600;color:#111827">
-              Overall Evaluation Result
-            </h2>
+            <div style="font-weight:600;color:#1f2937">
+              ${evaluation.supplier_name}
+            </div>
+            <div style="font-size:13px;color:#6b7280">
+              PO: ${evaluation.po_no}
+            </div>
+          </div>
+          <div style="
+            font-weight:bold;
+            font-size:16px;
+            color:#2563eb;
+          ">
+            ${score.toFixed(2)}%
+          </div>
+        </div>
+      `;
+    });
+
+    const overallScore = totalScore / selectedCheckboxes.length;
+
+    const isPassed = overallScore >= 60;
+    const badgeColor = isPassed ? '#16a34a' : '#dc2626';
+    const badgeText = isPassed ? 'PASSED' : 'FAILED';
+
+    Swal.fire({
+      width: 800,
+      background: '#ffffff',
+      confirmButtonColor: '#2563eb',
+      html: `
+        <div style="text-align:left">
+
+          <!-- HEADER -->
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+            <div>
+              <h2 style="margin:0;font-size:22px;font-weight:600;color:#111827">
+                Overall Evaluation Result
+              </h2>
+              <div style="
+                display:inline-block;
+                margin-top:6px;
+                padding:4px 10px;
+                border-radius:20px;
+                font-size:12px;
+                font-weight:600;
+                color:white;
+                background:${badgeColor};
+              ">
+                ${badgeText}
+              </div>
+            </div>
+
             <div style="
-              display:inline-block;
-              margin-top:6px;
-              padding:4px 10px;
-              border-radius:20px;
-              font-size:12px;
-              font-weight:600;
+              background:linear-gradient(135deg,#2563eb,#4f46e5);
               color:white;
-              background:${badgeColor};
+              padding:14px 18px;
+              border-radius:14px;
+              font-size:20px;
+              font-weight:bold;
+              box-shadow:0 4px 14px rgba(0,0,0,0.15);
             ">
-              ${badgeText}
+              ${overallScore.toFixed(2)}%
             </div>
           </div>
 
+          <!-- INFO -->
+          <div style="margin-bottom:18px;font-size:14px;color:#374151">
+            <p><strong>Supplier:</strong> ${Array.from(supplierSet).join(', ')}</p>
+            <p><strong>Purchase Order(s):</strong> ${poList.join(', ')}</p>
+            <p><strong>Department:</strong> ${Array.from(deptSet).join(', ')}</p>
+            <p><strong>Selected Evaluations:</strong> ${selectedCheckboxes.length}</p>
+          </div>
+
+          <!-- PROGRESS BAR -->
           <div style="
-            background:linear-gradient(135deg,#2563eb,#4f46e5);
-            color:white;
-            padding:14px 18px;
-            border-radius:14px;
-            font-size:20px;
-            font-weight:bold;
-            box-shadow:0 4px 14px rgba(0,0,0,0.15);
+            width:100%;
+            height:10px;
+            background:#e5e7eb;
+            border-radius:20px;
+            overflow:hidden;
+            margin-bottom:20px;
           ">
-            ${overallScore.toFixed(2)}%
+            <div style="
+              width:${overallScore}%;
+              height:100%;
+              background:linear-gradient(90deg,#2563eb,#4f46e5);
+              transition:width 0.6s ease;
+            "></div>
           </div>
-        </div>
 
-        <!-- INFO -->
-        <div style="margin-bottom:18px;font-size:14px;color:#374151">
-          <p><strong>Supplier:</strong> ${Array.from(supplierSet).join(', ')}</p>
-          <p><strong>Purchase Order(s):</strong> ${poList.join(', ')}</p>
-          <p><strong>Department:</strong> ${Array.from(deptSet).join(', ')}</p>
-          <p><strong>Selected Evaluations:</strong> ${selectedCheckboxes.length}</p>
-        </div>
-
-        <!-- PROGRESS BAR -->
-        <div style="
-          width:100%;
-          height:10px;
-          background:#e5e7eb;
-          border-radius:20px;
-          overflow:hidden;
-          margin-bottom:20px;
-        ">
-          <div style="
-            width:${overallScore}%;
-            height:100%;
-            background:linear-gradient(90deg,#2563eb,#4f46e5);
-            transition:width 0.6s ease;
-          "></div>
-        </div>
-
-        <!-- INDIVIDUAL SCORES -->
-        <div>
-          <h3 style="margin-bottom:10px;font-size:16px;font-weight:600;color:#111827">
-            Individual Evaluation Scores
-          </h3>
-          <div style="max-height:220px;overflow-y:auto;padding-right:4px">
-            ${evaluationCards}
+          <!-- INDIVIDUAL SCORES -->
+          <div>
+            <h3 style="margin-bottom:10px;font-size:16px;font-weight:600;color:#111827">
+              Individual Evaluation Scores
+            </h3>
+            <div style="max-height:220px;overflow-y:auto;padding-right:4px">
+              ${evaluationCards}
+            </div>
           </div>
+
         </div>
-
-      </div>
-    `
-  });
-
-});
-
-/* ========================= UPDATE PAGINATION INFO ========================= */
-function updatePaginationInfo(start, end, total) {
-  paginationInfo.textContent = `Showing ${start} to ${end} of ${total} results`;
-}
-
-/* ========================= RENDER PAGINATION BUTTONS ========================= */
-function renderPaginationButtons(dataLength) {
-
-  const totalPages = Math.ceil(dataLength / entriesPerPage);
-  paginationControls.innerHTML = '';
-
-  if (totalPages <= 1) return;
-
-  // Previous button
-  const prevBtn = document.createElement('button');
-  prevBtn.textContent = 'Previous';
-  prevBtn.className = 'px-3 py-1 border border-gray-300 rounded text-sm hover:bg-gray-50';
-  prevBtn.disabled = currentPage === 1;
-  prevBtn.addEventListener('click', () => {
-    if (currentPage > 1) {
-      currentPage--;
-      renderTable(filteredData.length ? filteredData : evaluations);
-      renderPaginationButtons((filteredData.length ? filteredData : evaluations).length);
-    }
-  });
-  paginationControls.appendChild(prevBtn);
-
-  // Page number buttons
-  for (let i = 1; i <= totalPages; i++) {
-    const pageBtn = document.createElement('button');
-    pageBtn.textContent = i;
-    pageBtn.className = `px-3 py-1 rounded text-sm ${
-      currentPage === i
-        ? 'bg-primary text-white'
-        : 'border border-gray-300 hover:bg-gray-50'
-    }`;
-
-    pageBtn.addEventListener('click', () => {
-      currentPage = i;
-      renderTable(filteredData.length ? filteredData : evaluations);
-      renderPaginationButtons((filteredData.length ? filteredData : evaluations).length);
+      `
     });
 
-    paginationControls.appendChild(pageBtn);
-  }
-
-  // Next button
-  const nextBtn = document.createElement('button');
-  nextBtn.textContent = 'Next';
-  nextBtn.className = 'px-3 py-1 border border-gray-300 rounded text-sm hover:bg-gray-50';
-  nextBtn.disabled = currentPage === totalPages;
-  nextBtn.addEventListener('click', () => {
-    if (currentPage < totalPages) {
-      currentPage++;
-      renderTable(filteredData.length ? filteredData : evaluations);
-      renderPaginationButtons((filteredData.length ? filteredData : evaluations).length);
-    }
   });
 
-  paginationControls.appendChild(nextBtn);
-}
+  /* ========================= UPDATE PAGINATION INFO ========================= */
+  function updatePaginationInfo(start, end, total) {
+    paginationInfo.textContent = `Showing ${start} to ${end} of ${total} results`;
+  }
 
+  /* ========================= RENDER PAGINATION BUTTONS ========================= */
+  function renderPaginationButtons(dataLength) {
 
+    const totalPages = Math.ceil(dataLength / entriesPerPage);
+    paginationControls.innerHTML = '';
 
+    if (totalPages <= 1) return;
 
+    // ================= PREVIOUS BUTTON =================
+    const prevBtn = document.createElement('button');
+    prevBtn.textContent = 'Previous';
+    prevBtn.className = 'px-3 py-1 border border-gray-300 rounded text-sm hover:bg-gray-50';
+    prevBtn.disabled = currentPage === 1;
 
+    prevBtn.addEventListener('click', () => {
+      if (currentPage > 1) {
+        currentPage--;
+        paginateAndRender();
+      }
+    });
 
-  /* ========================= CLOSE MODAL ========================= */
-  function hideViewModal() { viewevaluationModal.classList.add('hidden'); }
-  if (closeViewBtn) closeViewBtn.addEventListener('click', hideViewModal);
-  if (cancelBtn) cancelBtn.addEventListener('click', hideViewModal);
-  viewevaluationModal.addEventListener('click', e => { if (e.target === viewevaluationModal) hideViewModal(); });
+    paginationControls.appendChild(prevBtn);
 
-  /* ========================= FILTERS ========================= */
+    // ================= PAGE NUMBERS =================
+    for (let i = 1; i <= totalPages; i++) {
+      const pageBtn = document.createElement('button');
+      pageBtn.textContent = i;
+
+      pageBtn.className = `px-3 py-1 rounded text-sm ${
+        currentPage === i
+          ? 'bg-blue-600 text-white'
+          : 'border border-gray-300 hover:bg-gray-50'
+      }`;
+
+      pageBtn.addEventListener('click', () => {
+        currentPage = i;
+        paginateAndRender();
+      });
+
+      paginationControls.appendChild(pageBtn);
+    }
+
+    // ================= NEXT BUTTON =================
+    const nextBtn = document.createElement('button');
+    nextBtn.textContent = 'Next';
+    nextBtn.className = 'px-3 py-1 border border-gray-300 rounded text-sm hover:bg-gray-50';
+    nextBtn.disabled = currentPage === totalPages;
+
+    nextBtn.addEventListener('click', () => {
+      if (currentPage < totalPages) {
+        currentPage++;
+        paginateAndRender();
+      }
+    });
+
+    paginationControls.appendChild(nextBtn);
+  }
+
+  /* ========================= PAGINATE + RENDER HELPER ========================= */
+  function paginateAndRender() {
+    const sourceData = filteredData.length ? filteredData : evaluations;
+
+    const start = (currentPage - 1) * entriesPerPage;
+    const end = start + entriesPerPage;
+
+    const paginatedData = sourceData.slice(start, end);
+
+    renderTable(paginatedData);
+    updatePaginationInfo(start + 1, Math.min(end, sourceData.length), sourceData.length);
+    renderPaginationButtons(sourceData.length);
+  }
+
+  // When entries per page changes
+  if (entriesSelect) {
+    entriesSelect.addEventListener('change', () => {
+      entriesPerPage = parseInt(entriesSelect.value);
+      currentPage = 1;
+      paginateAndRender();
+    });
+  }
+
+   /* ========================= FILTERS ========================= */
   function applyFilters() {
     const startDate = startDateInput.value ? new Date(startDateInput.value) : null;
     const endDate = endDateInput.value ? new Date(endDateInput.value) : null;
@@ -822,7 +863,6 @@ function renderPaginationButtons(dataLength) {
     searchInput.value = '';
     renderTable(evaluations);
   });
-
 });
 </script>
 
