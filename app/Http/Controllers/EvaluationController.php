@@ -11,6 +11,8 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Carbon\Carbon;
+use App\Models\EvaluationCriteria;
 
 class EvaluationController extends Controller
 {
@@ -35,7 +37,7 @@ public function store(Request $request)
             $evaluation = Evaluation::create([
                 'supplier_name'   => $evalData['supplier_name'],
                 'po_no'           => $evalData['po_no'],
-                'date_evaluation' => $evalData['date_evaluation'],
+                'date_evaluation' => now()->timezone('Asia/Manila'), // set PH timezone
                 'covered_period'  => $evalData['covered_period'],
                 'office_name'     => $evalData['office_name'],
             ]);
@@ -43,6 +45,11 @@ public function store(Request $request)
             foreach ($evalData['criteria'] as $criteriaData) {
                 if (empty($criteriaData['rating'])) {
                     throw new \Exception("Rating for criteria ID {$criteriaData['criteria_id']} is required.");
+                }
+
+                // Validate criteria ID exists
+                if (!EvaluationCriteria::where('id', $criteriaData['criteria_id'])->exists()) {
+                    throw new \Exception("Invalid criteria ID {$criteriaData['criteria_id']} provided.");
                 }
 
                 CriteriaScore::create([
@@ -105,8 +112,8 @@ public function store(Request $request)
         $userFriendlyMessage = 'An unexpected error occurred while saving the evaluation.';
 
         // Customize message if it's a validation/required field error
-        if (str_contains($e->getMessage(), 'required') || str_contains($e->getMessage(), 'Rating')) {
-            $userFriendlyMessage = 'Please fill out all required fields before submitting the evaluation.';
+        if (str_contains($e->getMessage(), 'required') || str_contains($e->getMessage(), 'Rating') || str_contains($e->getMessage(), 'Invalid criteria ID')) {
+            $userFriendlyMessage = 'Please fill out all required fields correctly before submitting the evaluation.';
         }
 
         return response()->json([
@@ -115,7 +122,6 @@ public function store(Request $request)
         ], 500);
     }
 }
-
 
     /**
      * List all evaluations with overall rating, status, and evaluator
