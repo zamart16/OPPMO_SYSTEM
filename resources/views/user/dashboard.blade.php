@@ -88,19 +88,6 @@
         <div class="text-sm text-white mt-1">Manage and evaluate suppliers with ease</div>
       </div>
     </div>
-
-    <!-- Centered Links Section -->
-    <div class="flex justify-center space-x-12 flex-grow">
-    <a
-       class="text-gray-900 hover:text-blue-600 text-base font-medium flex items-center space-x-2 transition-all duration-300"
-       onclick="openModal()" style="cursor: pointer;">
-       <span>User Management</span>
-    </a>
-      <a href="/evaluation" class="text-gray-900 hover:text-blue-600 text-base font-medium flex items-center space-x-2 transition-all duration-300">
-        <span>Evaluation</span>
-      </a>
-    </div>
-
     <!-- User Info and Notifications -->
     <div class="flex items-center space-x-6">
       <!-- Notification -->
@@ -1699,8 +1686,6 @@ document.addEventListener('DOMContentLoaded', function() {
 }
 </style>
 
-
-@include('layout.user')
 </body>
 
 </html>
