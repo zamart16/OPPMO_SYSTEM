@@ -115,7 +115,7 @@
       <div class="flex items-center space-x-3">
         <img src="https://readdy.ai/api/search-image?query=professional%20business%20person%20headshot%20portrait%20with%20clean%20background%20corporate%20style&width=40&height=40&seq=user-avatar&orientation=squarish" alt="User" class="w-12 h-12 rounded-full object-cover border-2 border-gray-300 shadow-lg">
         <div class="text-sm">
-          <div class="font-medium text-gray-900">John Anderson</div>
+          <div class="font-medium text-gray-900">{{ auth()->user()->name ?? '' }}</div>
           <div class="text-gray-500">Administrator</div>
         </div>
       </div>
