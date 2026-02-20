@@ -5,7 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="csrf-token" content="{{ csrf_token() }}">
-  <link rel="icon" href="{{asset('logo.png')}}">
+
   <title>Supplier Evaluation Management</title>
   <script src="https://cdn.tailwindcss.com/3.4.16"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -267,7 +267,6 @@
                 </div>
               </div>
             </div>
-
 
 
 
@@ -866,6 +865,7 @@ try {
 });
 </script>
 
+
 <script>
 function toggleDropdown(button) {
     // Close other open dropdowns
@@ -891,17 +891,13 @@ document.addEventListener('click', function(e) {
 
 
 
-                <div class="px-6 py-4 border-t border-gray-200">
+                {{-- <div class="px-6 py-4 border-t border-gray-200">
                   <div class="flex items-center justify-between">
                     <div class="text-sm text-gray-500" id="paginationInfo">
                       Showing 0 to 0 of 0 results
                     </div>
-
-                    <div class="flex items-center space-x-2" id="paginationControls">
-                      <!-- Pagination buttons will be inserted here dynamically -->
-                    </div>
                   </div>
-                </div>
+                </div> --}}
           </div>
         </div>
     </main>
