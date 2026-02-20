@@ -5,6 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="csrf-token" content="{{ csrf_token() }}">
+  
   <title>Supplier Evaluation Management</title>
   <script src="https://cdn.tailwindcss.com/3.4.16"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -73,43 +74,58 @@
 
 
     <main class="flex-1 overflow-auto">
-      <header class="bg-gradient-to-r from-blue-600 to-blue-200 border-b border-gray-200 px-8 py-4 shadow-md sticky top-0 z-50">
-        <div class="flex items-center justify-between">
+{{-- <header class="bg-white border-b border-gray-200 px-8 py-4 shadow-md sticky top-0 z-50"> --}}
+    <header class="bg-gradient-to-r from-blue-600 to-blue-200 border-b border-gray-200 px-8 py-4 shadow-md sticky top-0 z-50">
+  <div class="flex items-center justify-between">
 
-          <!-- Logo and Title -->
-          <div class="flex items-center space-x-4">
-            <div class="flex-shrink-0">
-              <img src="{{asset('logo.png')}}" alt="Logo" class="w-14 h-14 object-contain rounded-lg shadow-md">
-            </div>
-            <div>
-              <h1 class="text-2xl font-semibold text-gray-900">Supplier Evaluation Management</h1>
-              <div class="flex items-center text-sm text-gray-500 mt-1">
-              </div>
-            </div>
-          </div>
+    <!-- Logo and Title -->
+    <div class="flex items-center space-x-6">
+      <div class="flex-shrink-0">
+        <img src="{{asset('logo.png')}}" alt="Logo" class="w-16 h-16 object-contain rounded-lg shadow-md">
+      </div>
+      <div>
+        <h1 class="text-3xl font-semibold text-gray-900">Supplier Evaluation Management</h1>
+        <div class="text-sm text-white mt-1">Manage and evaluate suppliers with ease</div>
+      </div>
+    </div>
 
-          <!-- User & Notifications -->
-          <div class="flex items-center space-x-6">
-            <!-- Notification -->
-            <button class="relative group">
-              <div class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100 transition">
-                <i class="ri-notification-line text-gray-600 text-xl"></i>
-              </div>
-              <span class="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border border-white"></span>
-            </button>
+    <!-- Centered Links Section -->
+    <div class="flex justify-center space-x-12 flex-grow">
+    <a
+       class="text-gray-900 hover:text-blue-600 text-base font-medium flex items-center space-x-2 transition-all duration-300"
+       onclick="openModal()" style="cursor: pointer;">
+       <span>User Management</span>
+    </a>
+      <a href="/evaluation" class="text-gray-900 hover:text-blue-600 text-base font-medium flex items-center space-x-2 transition-all duration-300">
+        <span>Evaluation</span>
+      </a>
+    </div>
 
-            <!-- User Info -->
-            <div class="flex items-center space-x-3">
-              <img src="https://readdy.ai/api/search-image?query=professional%20business%20person%20headshot%20portrait%20with%20clean%20background%20corporate%20style&width=40&height=40&seq=user-avatar&orientation=squarish" alt="User" class="w-10 h-10 rounded-full object-cover border border-gray-200 shadow-sm">
-              <div class="text-sm">
-                <div class="font-medium text-gray-900">{{ auth()->user()->name ?? '' }}</div>
-                <div class="text-gray-500">END-USER</div>
-              </div>
-            </div>
-          </div>
-
+    <!-- User Info and Notifications -->
+    <div class="flex items-center space-x-6">
+      <!-- Notification -->
+      <button class="relative group">
+        <div class="w-12 h-12 flex items-center justify-center rounded-full hover:bg-gray-100 transition">
+          <i class="ri-notification-line text-gray-600 text-2xl"></i>
         </div>
-      </header>
+        <span class="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border border-white"></span>
+      </button>
+
+      <!-- User Info -->
+      <div class="flex items-center space-x-3">
+        <img src="https://readdy.ai/api/search-image?query=professional%20business%20person%20headshot%20portrait%20with%20clean%20background%20corporate%20style&width=40&height=40&seq=user-avatar&orientation=squarish" alt="User" class="w-12 h-12 rounded-full object-cover border-2 border-gray-300 shadow-lg">
+        <div class="text-sm">
+          <div class="font-medium text-gray-900">John Anderson</div>
+          <div class="text-gray-500">Administrator</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</header>
+
+
+
 
 
       <div class="p-8">
@@ -120,24 +136,31 @@
             <div class="flex items-center justify-between mb-6">
               <h2 class="text-lg font-semibold text-gray-900">Evaluation Records</h2>
 
-              <div class="flex space-x-2">
-                <!-- Button to open the New Evaluation Modal -->
-                <button id="openNewEvaluationModalBtn" class="bg-primary text-white px-4 py-2 !rounded-button hover:bg-blue-600 flex items-center">
-                  <div class="w-4 h-4 flex items-center justify-center mr-2">
-                    <i class="ri-add-line"></i>
-                  </div>
-                  New Evaluation
-                </button>
+            <div class="flex space-x-2">
+              <!-- Button to open the New Evaluation Modal -->
+              <button id="openNewEvaluationModalBtn" class="bg-primary text-white px-4 py-2 !rounded-button hover:bg-blue-600 flex items-center">
+                <div class="w-4 h-4 flex items-center justify-center mr-2">
+                  <i class="ri-add-line"></i>
+                </div>
+                New Evaluation
+              </button>
 
+              <!-- Calculate Evaluations Button (Initially Hidden) -->
+              <button id="calculateEvaluationsBtn" class="bg-green-500 text-white px-4 py-2 !rounded-button hover:bg-green-600 flex items-center hidden">
+                <div class="w-4 h-4 flex items-center justify-center mr-2">
+                  <i class="ri-calculator-line"></i>
+                </div>
+                Calculate Evaluations
+              </button>
 
-                <!-- Clear Button -->
-                <button id="clearFiltersBtn" class="bg-gray-200 text-gray-800 px-4 py-2 rounded-md hover:bg-gray-300 flex items-center">
-                  <div class="w-4 h-4 flex items-center justify-center mr-2">
-                    <i class="ri-refresh-line"></i>
-                  </div>
-                  Clear
-                </button>
-              </div>
+              <!-- Clear Button -->
+              <button id="clearFiltersBtn" class="bg-gray-200 text-gray-800 px-4 py-2 rounded-md hover:bg-gray-300 flex items-center">
+                <div class="w-4 h-4 flex items-center justify-center mr-2">
+                  <i class="ri-refresh-line"></i>
+                </div>
+                Clear
+              </button>
+            </div>
             </div>
 
 
@@ -155,7 +178,7 @@
               </div>
 
               <!-- Department Filter -->
-              {{-- <select id="departmentFilter" class="border border-gray-300 rounded-lg px-3 py-2 text-sm pr-8">
+              <select id="departmentFilter" class="border border-gray-300 rounded-lg px-3 py-2 text-sm pr-8">
                 <option value="">All Departments</option>
 
                 <!-- Set 1 -->
@@ -208,7 +231,7 @@
                 <option value="PGO-OSP">PGO-OSP</option>
                 <option value="Muslim Affairs">Muslim Affairs</option>
                 <option value="BFP">BFP</option>
-              </select> --}}
+              </select>
 
               <!-- Start & End Date Container -->
               <div class="flex flex-col border border-gray-300 rounded-lg p-4 bg-white shadow-sm w-full max-w-md">
@@ -247,10 +270,14 @@
 
 
 
- <div class="overflow-x-auto">
+<div class="overflow-x-auto">
   <table class="w-full border-collapse table-auto" id="evaluationTable">
     <thead class="bg-gray-50">
       <tr>
+        <!-- Add a checkbox column for selecting rows -->
+        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+          <input type="checkbox" id="selectAllCheckbox" class="select-all-checkbox">
+        </th>
         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">No.</th>
         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Supplier Name</th>
         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Purchase Order</th>
@@ -262,10 +289,21 @@
         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
       </tr>
     </thead>
+
     <tbody class="bg-white divide-y divide-gray-200">
       <!-- Rows will be dynamically inserted here -->
     </tbody>
   </table>
+</div>
+
+<!-- Pagination Controls -->
+<div class="flex justify-between py-4" id="paginationControls">
+  <!-- Pagination controls go here -->
+</div>
+
+<!-- Pagination Info -->
+<div id="paginationInfo" class="text-sm text-gray-500">
+  Showing 1 to 10 of X results
 </div>
 
 <style>
@@ -302,13 +340,21 @@ document.addEventListener('DOMContentLoaded', async () => {
   const startDateInput = document.getElementById('startDateFilter');
   const endDateInput = document.getElementById('endDateFilter');
   const clearBtn = document.getElementById('clearFiltersBtn');
-
   const viewevaluationModal = document.getElementById('viewevaluationModal');
   const closeViewBtn = document.getElementById('closeviewModal');
   const cancelBtn = document.getElementById('cancelBtn');
+  const calculateBtn = document.getElementById('calculateEvaluationsBtn');
 
   let evaluations = [];
   let filteredData = [];
+
+  /* ========================= PAGINATION VARIABLES ========================= */
+  const entriesSelect = document.getElementById('entriesPerPage');
+  const paginationControls = document.getElementById('paginationControls');
+  const paginationInfo = document.getElementById('paginationInfo');
+
+  let currentPage = 1;
+  let entriesPerPage = entriesSelect ? parseInt(entriesSelect.value) : 10;
 
   /* ========================= LOADING MODAL ========================= */
   let loadingModal = document.getElementById('loadingModal');
@@ -362,11 +408,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   async function loadEvaluation(evaluationId) {
     viewevaluationModal.classList.remove('hidden');
     showModalLoading();
-
     try {
       const response = await fetch(`/evaluation/${evaluationId}`);
       if (!response.ok) throw new Error("Failed to fetch evaluation");
-
       const data = await response.json();
       const evaluation = data.evaluation;
       const evaluator = data.evaluator || { full_name: 'Not Available', designation: 'Not Available', image: '/default-image.png' };
@@ -404,10 +448,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       viewevaluationModal.querySelector('.po-rating').textContent = totalScore.toFixed(2);
 
       const statusText = document.getElementById('statusText');
-      // Determine For HEAD REVIEW if no Head approval exists
       const hasHeadApproval = evaluation.digital_approvals?.some(a => a.role === 'Head');
       if (!hasHeadApproval) {
-        statusText.textContent = "For For HEAD REVIEW";
+        statusText.textContent = "For HEAD REVIEW";
         statusText.className = "font-bold text-yellow-800";
       } else if (totalScore >= 60) {
         statusText.textContent = "PASSED";
@@ -424,87 +467,374 @@ document.addEventListener('DOMContentLoaded', async () => {
     } finally { hideModalLoading(); }
   }
 
-  /* ========================= RENDER TABLE ========================= */
-  function renderTable(data) {
-    tbody.innerHTML = '';
-    if (data.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="9" class="px-6 py-4 text-center text-gray-500">No evaluations found.</td></tr>`;
-      return;
-    }
 
-    data.forEach((eval, index) => {
-      const hasHeadApproval = eval.digital_approvals?.some(a => a.role === 'Head');
-      const status = !hasHeadApproval ? "HEAD REVIEW" : eval.eval_score >= 60 ? "Approved" : "Fail!";
+  /* ========================= RENDER TABLE WITH CHECKBOX ========================= */
+function renderTable(data) {
+  tbody.innerHTML = '';
 
-      const row = document.createElement('tr');
-      row.innerHTML = `
-        <td class="px-6 py-4 text-sm text-gray-500">${index + 1}</td>
-        <td class="px-6 py-4 text-sm font-medium text-gray-900">${eval.supplier_name}</td>
-        <td class="px-6 py-4 text-sm text-gray-500">${eval.po_no}</td>
-        <td class="px-6 py-4 text-sm text-gray-500">${eval.date_evaluation}</td>
-        <td class="px-6 py-4 text-sm text-gray-500">${eval.evaluator}</td>
-        <td class="px-6 py-4 text-sm text-gray-500">${eval.department}</td>
-        <td class="px-6 py-4 text-sm">${eval.eval_score}%</td>
-        <td class="px-6 py-4">
-          <span class="px-2 py-1 text-xs font-semibold rounded-full
-            ${status === 'Approved' ? 'bg-green-100 text-green-800' :
-              status === 'Fail!' ? 'bg-red-100 text-red-800' :
-              'bg-yellow-100 text-yellow-800'}">
-            ${status}
-          </span>
-        </td>
-        <td class="px-6 py-4 flex space-x-2">
-          <!-- View button -->
-          <button class="text-primary hover:text-blue-700 viewEvaluationBtn" data-id="${eval.id}" title="View">
-            <i class="ri-eye-line"></i>
+  // Check if data is an array
+  if (!Array.isArray(data)) {
+    console.error('Data is not an array:', data);
+    tbody.innerHTML = `<tr><td colspan="10" class="px-6 py-4 text-center text-red-500">Unexpected data format.</td></tr>`;
+    return;
+  }
+
+  if (data.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="10" class="px-6 py-4 text-center text-gray-500">No evaluations found.</td></tr>`;
+    return;
+  }
+
+  data.forEach((eval, index) => {
+    const hasHeadApproval = eval.digital_approvals?.some(a => a.role === 'Head');
+    const status = !hasHeadApproval ? "HEAD REVIEW" : eval.eval_score >= 60 ? "Approved" : "Fail!";
+
+    // Check if the evaluation score is below 60 to apply the red color
+    const evalScoreClass = eval.eval_score < 60 ? 'text-red-600 border-2 border-red-600' : 'text-green-600 border-2 border-green-600';
+
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td class="px-6 py-4 text-sm text-gray-500">
+        <input type="checkbox" class="row-checkbox" data-id="${eval.id}">
+      </td>
+      <td class="px-6 py-4 text-sm text-gray-500">${index + 1}</td>
+      <td class="px-6 py-4 text-sm font-medium text-gray-900">${eval.supplier_name}</td>
+      <td class="px-6 py-4 text-sm text-gray-500">${eval.po_no}</td>
+      <td class="px-6 py-4 text-sm text-gray-500">${eval.date_evaluation}</td>
+      <td class="px-6 py-4 text-sm text-gray-500">${eval.evaluator}</td>
+      <td class="px-6 py-4 text-sm text-gray-500">${eval.department}</td>
+      <td class="px-6 py-4 text-sm ${evalScoreClass}"><strong>${eval.eval_score}%</strong></td>
+      <td class="px-6 py-4">
+        <span class="px-2 py-1 text-xs font-semibold rounded-full
+                      ${status === 'Approved' ? 'bg-green-100 text-green-800' :
+            status === 'Fail!' ? 'bg-red-100 text-red-800' :
+            'bg-yellow-100 text-yellow-800'}">
+          ${status}
+        </span>
+      </td>
+      <td class="px-6 py-4 text-right relative">
+        <div class="inline-block text-left relative">
+          <!-- Dropdown Button -->
+          <button onclick="toggleDropdown(this)"
+                  class="bg-gradient-to-r from-blue-600 to-blue-400 text-white border-b border-gray-200
+                         hover:bg-gradient-to-r hover:from-blue-500 hover:to-blue-300
+                         focus:outline-none px-4 py-2 rounded-md text-sm transition-all duration-200 ease-in-out">
+            Actions
           </button>
-          <!-- Download PDF button -->
-          <a href="/evaluation/download/${eval.id}" target="_blank" class="ml-2 text-gray-700 hover:text-gray-900">
-            <i class="ri-file-download-line"></i>
-          </a>
-        </td>
-      `;
-      tbody.appendChild(row);
-    });
+          <!-- Dropdown Menu -->
+          <div class="dropdown-menu hidden absolute right-0 mt-2 w-40 bg-blue-50 border border-blue-200 rounded-lg shadow-lg z-50">
+            <button
+              class="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-blue-100 viewEvaluationBtn"
+              data-id="${eval.id}">
+              <i class="ri-eye-line mr-2"></i> View
+            </button>
+            <button
+              class="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-blue-100 updateEvaluationBtn"
+              data-id="${eval.id}">
+              <i class="ri-edit-line mr-2"></i> Update
+            </button>
+            <a href="/evaluation/download/${eval.id}"
+               target="_blank"
+               class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-blue-100">
+              <i class="ri-file-download-line mr-2"></i> Download
+            </a>
+          </div>
+        </div>
+      </td>
+    `;
+    tbody.appendChild(row);
+  });
 
-      // Attach view event
-     document.querySelectorAll('.viewEvaluationBtn').forEach(btn => {
-       btn.addEventListener('click', () => loadEvaluation(btn.dataset.id));
-     });
+  // Checkbox functionality & calculate button logic
+  const rowCheckboxes = tbody.querySelectorAll('.row-checkbox');
+  rowCheckboxes.forEach(cb => cb.addEventListener('change', () => {
+    const selectedCount = tbody.querySelectorAll('.row-checkbox:checked').length;
 
-     // Attach PDF download event
-     document.querySelectorAll('.downloadPdfBtn').forEach(btn => {
-       btn.addEventListener('click', () => {
-         const evalId = btn.dataset.id;
-         window.open(`/evaluation/${evalId}/pdf`, '_blank'); // opens PDF download
-       });
-     });
+    // Show the button only when 2 or more checkboxes are selected
+    if (selectedCount >= 2) {
+      calculateBtn.classList.remove('hidden');
+      calculateBtn.textContent = `Calculate Evaluations (${selectedCount})`;
+    } else {
+      calculateBtn.classList.add('hidden');
+    }
+  }));
 
+  // Handle Select All checkbox
+  const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+  if (selectAllCheckbox) {
+    selectAllCheckbox.addEventListener('change', () => {
+      const isChecked = selectAllCheckbox.checked;
+      rowCheckboxes.forEach(cb => cb.checked = isChecked);
 
-    document.querySelectorAll('.viewEvaluationBtn').forEach(btn => {
-      btn.addEventListener('click', () => loadEvaluation(btn.dataset.id));
+      // Show the calculate button if 2 or more checkboxes are selected
+      const selectedCount = tbody.querySelectorAll('.row-checkbox:checked').length;
+      if (selectedCount >= 2) {
+        calculateBtn.classList.remove('hidden');
+        calculateBtn.textContent = `Calculate Evaluations (${selectedCount})`;
+      } else {
+        calculateBtn.classList.add('hidden');
+      }
     });
   }
 
+  // Attach view events
+  document.querySelectorAll('.viewEvaluationBtn').forEach(btn => {
+    btn.addEventListener('click', () => loadEvaluation(btn.dataset.id));
+  });
+}
+
   /* ========================= FETCH DATA ========================= */
-  showLoading();
-  try {
-    const response = await fetch('/evaluation/list');
-    if (!response.ok) throw new Error('Failed to fetch evaluations');
-    evaluations = await response.json();
-    renderTable(evaluations);
-  } catch (err) {
-    console.error(err);
-    tbody.innerHTML = `<tr><td colspan="9" class="px-6 py-4 text-center text-red-500">${err.message}</td></tr>`;
-  } finally { hideLoading(); }
+showLoading();
+try {
+  const response = await fetch('/evaluation/list');
+  if (!response.ok) throw new Error('Failed to fetch evaluations');
+  const data = await response.json();
 
-  /* ========================= CLOSE MODAL ========================= */
-  function hideViewModal() { viewevaluationModal.classList.add('hidden'); }
-  if (closeViewBtn) closeViewBtn.addEventListener('click', hideViewModal);
-  if (cancelBtn) cancelBtn.addEventListener('click', hideViewModal);
-  viewevaluationModal.addEventListener('click', e => { if (e.target === viewevaluationModal) hideViewModal(); });
+  // Pass the evaluations array, not the whole object
+  evaluations = data.evaluations || [];
 
-  /* ========================= FILTERS ========================= */
+  // Sort by date descending (latest first)
+  evaluations.sort((a, b) => new Date(b.date_evaluation) - new Date(a.date_evaluation));
+
+  renderTable(evaluations);
+
+} catch (err) {
+  console.error(err);
+  tbody.innerHTML = `<tr><td colspan="10" class="px-6 py-4 text-center text-red-500">${err.message}</td></tr>`;
+} finally {
+  hideLoading();
+}
+
+  /* ========================= CALCULATE BUTTON ACTION ========================= */
+  calculateBtn?.addEventListener('click', () => {
+
+    const selectedCheckboxes = Array.from(
+      tbody.querySelectorAll('.row-checkbox:checked')
+    );
+
+    if (selectedCheckboxes.length < 2) return;
+
+    let totalScore = 0;
+    let supplierSet = new Set();
+    let poList = [];
+    let deptSet = new Set();
+    let evaluationCards = '';
+
+    selectedCheckboxes.forEach(cb => {
+      const id = cb.dataset.id;
+      const evaluation = evaluations.find(e => e.id == id);
+      if (!evaluation) return;
+
+      const score = parseFloat(evaluation.eval_score);
+
+      totalScore += score;
+      supplierSet.add(evaluation.supplier_name);
+      poList.push(evaluation.po_no);
+      deptSet.add(evaluation.department);
+
+      evaluationCards += `
+        <div style="
+          display:flex;
+          justify-content:space-between;
+          align-items:center;
+          padding:10px 14px;
+          border-radius:10px;
+          background:#f8fafc;
+          margin-bottom:8px;
+          border:1px solid #e5e7eb;
+        ">
+          <div>
+            <div style="font-weight:600;color:#1f2937">
+              ${evaluation.supplier_name}
+            </div>
+            <div style="font-size:13px;color:#6b7280">
+              PO: ${evaluation.po_no}
+            </div>
+          </div>
+          <div style="
+            font-weight:bold;
+            font-size:16px;
+            color:#2563eb;
+          ">
+            ${score.toFixed(2)}%
+          </div>
+        </div>
+      `;
+    });
+
+    const overallScore = totalScore / selectedCheckboxes.length;
+
+    const isPassed = overallScore >= 60;
+    const badgeColor = isPassed ? '#16a34a' : '#dc2626';
+    const badgeText = isPassed ? 'PASSED' : 'FAILED';
+
+    Swal.fire({
+      width: 800,
+      background: '#ffffff',
+      confirmButtonColor: '#2563eb',
+      html: `
+        <div style="text-align:left">
+
+          <!-- HEADER -->
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+            <div>
+              <h2 style="margin:0;font-size:22px;font-weight:600;color:#111827">
+                Overall Evaluation Result
+              </h2>
+              <div style="
+                display:inline-block;
+                margin-top:6px;
+                padding:4px 10px;
+                border-radius:20px;
+                font-size:12px;
+                font-weight:600;
+                color:white;
+                background:${badgeColor};
+              ">
+                ${badgeText}
+              </div>
+            </div>
+
+            <div style="
+              background:linear-gradient(135deg,#2563eb,#4f46e5);
+              color:white;
+              padding:14px 18px;
+              border-radius:14px;
+              font-size:20px;
+              font-weight:bold;
+              box-shadow:0 4px 14px rgba(0,0,0,0.15);
+            ">
+              ${overallScore.toFixed(2)}%
+            </div>
+          </div>
+
+          <!-- INFO -->
+          <div style="margin-bottom:18px;font-size:14px;color:#374151">
+            <p><strong>Supplier:</strong> ${Array.from(supplierSet).join(', ')}</p>
+            <p><strong>Purchase Order(s):</strong> ${poList.join(', ')}</p>
+            <p><strong>Department:</strong> ${Array.from(deptSet).join(', ')}</p>
+            <p><strong>Selected Evaluations:</strong> ${selectedCheckboxes.length}</p>
+          </div>
+
+          <!-- PROGRESS BAR -->
+          <div style="
+            width:100%;
+            height:10px;
+            background:#e5e7eb;
+            border-radius:20px;
+            overflow:hidden;
+            margin-bottom:20px;
+          ">
+            <div style="
+              width:${overallScore}%;
+              height:100%;
+              background:linear-gradient(90deg,#2563eb,#4f46e5);
+              transition:width 0.6s ease;
+            "></div>
+          </div>
+
+          <!-- INDIVIDUAL SCORES -->
+          <div>
+            <h3 style="margin-bottom:10px;font-size:16px;font-weight:600;color:#111827">
+              Individual Evaluation Scores
+            </h3>
+            <div style="max-height:220px;overflow-y:auto;padding-right:4px">
+              ${evaluationCards}
+            </div>
+          </div>
+
+        </div>
+      `
+    });
+
+  });
+
+  /* ========================= UPDATE PAGINATION INFO ========================= */
+  function updatePaginationInfo(start, end, total) {
+    paginationInfo.textContent = `Showing ${start} to ${end} of ${total} results`;
+  }
+
+  /* ========================= RENDER PAGINATION BUTTONS ========================= */
+  function renderPaginationButtons(dataLength) {
+
+    const totalPages = Math.ceil(dataLength / entriesPerPage);
+    paginationControls.innerHTML = '';
+
+    if (totalPages <= 1) return;
+
+    // ================= PREVIOUS BUTTON =================
+    const prevBtn = document.createElement('button');
+    prevBtn.textContent = 'Previous';
+    prevBtn.className = 'px-3 py-1 border border-gray-300 rounded text-sm hover:bg-gray-50';
+    prevBtn.disabled = currentPage === 1;
+
+    prevBtn.addEventListener('click', () => {
+      if (currentPage > 1) {
+        currentPage--;
+        paginateAndRender();
+      }
+    });
+
+    paginationControls.appendChild(prevBtn);
+
+    // ================= PAGE NUMBERS =================
+    for (let i = 1; i <= totalPages; i++) {
+      const pageBtn = document.createElement('button');
+      pageBtn.textContent = i;
+
+      pageBtn.className = `px-3 py-1 rounded text-sm ${
+        currentPage === i
+          ? 'bg-blue-600 text-white'
+          : 'border border-gray-300 hover:bg-gray-50'
+      }`;
+
+      pageBtn.addEventListener('click', () => {
+        currentPage = i;
+        paginateAndRender();
+      });
+
+      paginationControls.appendChild(pageBtn);
+    }
+
+    // ================= NEXT BUTTON =================
+    const nextBtn = document.createElement('button');
+    nextBtn.textContent = 'Next';
+    nextBtn.className = 'px-3 py-1 border border-gray-300 rounded text-sm hover:bg-gray-50';
+    nextBtn.disabled = currentPage === totalPages;
+
+    nextBtn.addEventListener('click', () => {
+      if (currentPage < totalPages) {
+        currentPage++;
+        paginateAndRender();
+      }
+    });
+
+    paginationControls.appendChild(nextBtn);
+  }
+
+  /* ========================= PAGINATE + RENDER HELPER ========================= */
+  function paginateAndRender() {
+    const sourceData = filteredData.length ? filteredData : evaluations;
+
+    const start = (currentPage - 1) * entriesPerPage;
+    const end = start + entriesPerPage;
+
+    const paginatedData = sourceData.slice(start, end);
+
+    renderTable(paginatedData);
+    updatePaginationInfo(start + 1, Math.min(end, sourceData.length), sourceData.length);
+    renderPaginationButtons(sourceData.length);
+  }
+
+  // When entries per page changes
+  if (entriesSelect) {
+    entriesSelect.addEventListener('change', () => {
+      entriesPerPage = parseInt(entriesSelect.value);
+      currentPage = 1;
+      paginateAndRender();
+    });
+  }
+
+   /* ========================= FILTERS ========================= */
   function applyFilters() {
     const startDate = startDateInput.value ? new Date(startDateInput.value) : null;
     const endDate = endDateInput.value ? new Date(endDateInput.value) : null;
@@ -532,33 +862,42 @@ document.addEventListener('DOMContentLoaded', async () => {
     searchInput.value = '';
     renderTable(evaluations);
   });
+});
+</script>
 
+
+<script>
+function toggleDropdown(button) {
+    // Close other open dropdowns
+    document.querySelectorAll('.dropdown-menu').forEach(menu => {
+        if (menu !== button.nextElementSibling) {
+            menu.classList.add('hidden');
+        }
+    });
+
+    // Toggle current dropdown
+    button.nextElementSibling.classList.toggle('hidden');
+}
+
+// Close dropdown when clicking outside
+document.addEventListener('click', function(e) {
+    if (!e.target.closest('.relative')) {
+        document.querySelectorAll('.dropdown-menu').forEach(menu => {
+            menu.classList.add('hidden');
+        });
+    }
 });
 </script>
 
 
 
-
-
-
-
-
-
-
-            <div class="px-6 py-4 border-t border-gray-200">
-              <div class="flex items-center justify-between">
-                <div class="text-sm text-gray-500">
-                  Showing 1 to 3 of 15 results
-                </div>
-                <div class="flex items-center space-x-2">
-                  <button class="px-3 py-1 border border-gray-300 rounded text-sm hover:bg-gray-50">Previous</button>
-                  <button class="px-3 py-1 bg-primary text-white rounded text-sm">1</button>
-                  <button class="px-3 py-1 border border-gray-300 rounded text-sm hover:bg-gray-50">2</button>
-                  <button class="px-3 py-1 border border-gray-300 rounded text-sm hover:bg-gray-50">3</button>
-                  <button class="px-3 py-1 border border-gray-300 rounded text-sm hover:bg-gray-50">Next</button>
-                </div>
-              </div>
-            </div>
+                {{-- <div class="px-6 py-4 border-t border-gray-200">
+                  <div class="flex items-center justify-between">
+                    <div class="text-sm text-gray-500" id="paginationInfo">
+                      Showing 0 to 0 of 0 results
+                    </div>
+                  </div>
+                </div> --}}
           </div>
         </div>
     </main>
@@ -1018,7 +1357,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             </div>
           </div>
 
-
 <div class="bg-gray-50 rounded-xl p-6 border-2 border-gray-200">
   <h4 class="text-lg font-bold text-gray-800 mb-6 pb-3 border-b border-gray-300">
     Digital Authorization
@@ -1045,7 +1383,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         <div class="text-xs text-gray-500 mb-3">
           This Supplier Evaluation is authenticated and authorized through
           computer-generated facial recognition technology, which serves
-          as my official signature in place of a handwritten signature.
+          as an official signature in place of a handwritten signature.
         </div>
 
         <img id="evaluatorImage"
@@ -1101,7 +1439,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     </button>
   </div>
 </div>
-
 
 
 
@@ -1251,6 +1588,119 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
 
+
+  <!-- XL CALCULATION MODAL -->
+<!-- ===================== MODERN XL CALCULATION MODAL ===================== -->
+<div id="calculationModal"
+     class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden items-center justify-center z-50 transition-opacity duration-500">
+
+  <div id="calculationModalContent"
+       class="relative w-11/12 max-w-5xl rounded-3xl shadow-2xl
+              bg-white/80 backdrop-blur-xl border border-white/30
+              transform scale-90 opacity-0 transition-all duration-500 ease-out overflow-hidden">
+
+    <!-- Gradient Header -->
+    <div class="bg-gradient-to-r from-blue-600 to-indigo-600 p-6 text-white">
+      <div class="flex justify-between items-center">
+        <h2 class="text-2xl font-semibold tracking-wide">
+          Overall Evaluation Result
+        </h2>
+
+        <!-- Score Circle -->
+        <div class="relative">
+          <div class="w-20 h-20 rounded-full bg-white/20 flex items-center justify-center border-4 border-white/30">
+            <span id="calcScore"
+                  class="text-xl font-bold text-white"></span>%
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Body -->
+    <div class="p-8">
+
+      <!-- Info Cards -->
+      <div class="grid md:grid-cols-3 gap-6 mb-8">
+
+        <div class="bg-white shadow-md rounded-xl p-4 border">
+          <p class="text-xs text-gray-500 uppercase tracking-wide">Supplier</p>
+          <p id="calcSupplier" class="text-lg font-semibold text-gray-800"></p>
+        </div>
+
+        <div class="bg-white shadow-md rounded-xl p-4 border">
+          <p class="text-xs text-gray-500 uppercase tracking-wide">Purchase Orders</p>
+          <p id="calcPO" class="text-lg font-semibold text-gray-800 break-words"></p>
+        </div>
+
+        <div class="bg-white shadow-md rounded-xl p-4 border">
+          <p class="text-xs text-gray-500 uppercase tracking-wide">Department</p>
+          <p id="calcDept" class="text-lg font-semibold text-gray-800"></p>
+        </div>
+
+      </div>
+
+      <!-- Selected Count -->
+      <div class="mb-6 text-center">
+        <p class="text-gray-600 text-lg">
+          Selected Evaluations:
+          <span id="calcCount" class="font-bold text-indigo-600"></span>
+        </p>
+      </div>
+
+      <!-- Progress Bar -->
+      <div class="w-full bg-gray-200 rounded-full h-4 mb-8 overflow-hidden">
+        <div id="scoreProgress"
+             class="h-4 rounded-full bg-gradient-to-r from-blue-500 to-indigo-600 transition-all duration-700"
+             style="width:0%">
+        </div>
+      </div>
+
+      <!-- Individual Evaluation Scores -->
+      <div>
+        <h3 class="text-lg font-semibold mb-4 text-gray-700">
+          Individual Evaluation Scores
+        </h3>
+
+        <div id="evaluationScoreList"
+             class="space-y-3 max-h-64 overflow-y-auto pr-2">
+          <!-- JS will insert each evaluation here -->
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="mt-10 text-center">
+        <button id="closeCalcModal"
+                class="px-8 py-3 bg-gradient-to-r from-gray-700 to-gray-900
+                       text-white rounded-xl shadow-lg hover:scale-105
+                       hover:shadow-xl transition-all duration-300">
+          Close
+        </button>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+
+<style>
+@keyframes flyInModern {
+  from {
+    transform: translateY(-30px) scale(0.92);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+.modal-fly {
+  animation: flyInModern 0.45s cubic-bezier(.16,.84,.44,1) forwards;
+}
+</style>
+
+
+@include('layout.user')
 </body>
 
 </html>
