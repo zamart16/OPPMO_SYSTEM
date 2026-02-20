@@ -144,14 +144,16 @@ public function list()
         // ROLE-BASED FILTERING
         // =========================
         if ($userRole === 'administrator') {
-            // Admin can see ALL evaluations
+            // Admin can see ALL evaluations, paginate and order by date_evaluation
             $evaluations = Evaluation::with('criteriaScores', 'digitalApprovals')
-                ->get();
+                ->orderBy('date_evaluation', 'asc') // Order by date_evaluation ascending
+                ->paginate(10); // Paginate to show 10 evaluations per page
         } else {
-            // Normal users see only their department
+            // Normal users see only their department, paginate and order by date_evaluation
             $evaluations = Evaluation::with('criteriaScores', 'digitalApprovals')
                 ->where('office_name', $userDepartment)
-                ->get();
+                ->orderBy('date_evaluation', 'asc') // Order by date_evaluation ascending
+                ->paginate(10); // Paginate to show 10 evaluations per page
         }
 
         $result = $evaluations->map(function ($eval) {
@@ -202,7 +204,15 @@ public function list()
             ];
         });
 
-        return response()->json($result);
+        return response()->json([
+            'evaluations' => $result,
+            'pagination' => [
+                'current_page' => $evaluations->currentPage(),
+                'last_page' => $evaluations->lastPage(),
+                'per_page' => $evaluations->perPage(),
+                'total' => $evaluations->total(),
+            ]
+        ]);
 
     } catch (\Exception $e) {
         return response()->json([
@@ -210,6 +220,7 @@ public function list()
         ], 500);
     }
 }
+
 
 
 
