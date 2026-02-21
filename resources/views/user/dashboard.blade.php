@@ -125,7 +125,7 @@
 
             <div class="flex space-x-2">
               <!-- Button to open the New Evaluation Modal -->
-              <button id="openNewEvaluationModalBtn" class="bg-primary text-white px-4 py-2 !rounded-button hover:bg-blue-600 flex items-center">
+              <button hidden id="openNewEvaluationModalBtn" class="bg-primary text-white px-4 py-2 !rounded-button hover:bg-blue-600 flex items-center">
                 <div class="w-4 h-4 flex items-center justify-center mr-2">
                   <i class="ri-add-line"></i>
                 </div>
